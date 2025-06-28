@@ -1,0 +1,45 @@
+address_providers:
+  - type: ipify
+  - type: icanhazip
+  - type: custom_json
+    opts:
+      url: https://api.my-ip.io/v2/ip.json
+      json_field: .ip
+  - type: custom_json
+    opts:
+      url: https://ipinfo.io/json
+      json_field: ip
+  # - type: custom
+  #   opts:
+  #     url: https://api.my-ip.io/v2/ip.txt
+  - type: custom
+    opts:
+      url: https://ifconfig.me/ip
+  - type: custom
+    opts:
+      url: https://ipinfo.io/ip
+
+dns_service:
+  # cloudflare:
+  #   api_token: your-cloudflare-api-token
+  #   zone: collom.co.uk
+  #   hostname: home.collom.co.uk
+  #   ttl: 300
+# Uncomment to use RNDC instead:
+#  rndc:
+#    zone: example.com
+#    hostname: home.example.com
+#    nameserver: 127.0.0.1
+#    port: 53
+#    tsig_key: your-key
+#    tsig_secret: your-base64-secret
+#    algorithm: hmac-sha256
+#    ttl: 300
+
+# Uncomment to use DynDNS instead:
+#  dyndns:
+#    hostname: home.example.com
+#    username: your-dyndns-username
+#    password: your-dyndns-password
+#    ttl: 300
+#    endpoint: https://members.dyndns.org/nic/update
