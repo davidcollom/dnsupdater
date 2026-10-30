@@ -9,14 +9,14 @@ works with multiple DNS backends behind a single pluggable interface.
 ## Features
 
 - Multiple IP address providers, queried together and de-duplicated
-- Pluggable DNS update backends: **Cloudflare**, **RNDC**, and **DynDNS**
+- Pluggable DNS update backends: **RNDC** and **DynDNS**
 - YAML configuration via [Viper](https://github.com/spf13/viper)
-- [Cobra](https://github.com/spf13/cobra) CLI with a `--config` flag
+- [Cobra](https://github.com/spf13/cobra) CLI with a `run` subcommand and a `--config` flag
 
 ## Requirements
 
 - Go 1.25 or newer
-- A DNS provider account (Cloudflare API token, RNDC key, or DynDNS credentials)
+- A DNS provider account (RNDC TSIG key, or DynDNS credentials)
 
 ## Installation
 
@@ -27,7 +27,7 @@ go build -o dnsupdater .
 Or run directly:
 
 ```bash
-go run .
+go run . run
 ```
 
 ## Configuration
@@ -47,10 +47,14 @@ address_providers:
       url: https://ifconfig.me/ip
 
 dns_service:
-  cloudflare:
-    api_token: your-cloudflare-api-token
+  rndc:
     zone: example.com
     hostname: home.example.com
+    nameserver: 127.0.0.1
+    port: 53
+    tsig_key: your-key
+    tsig_secret: your-base64-secret
+    algorithm: hmac-sha256
     ttl: 300
 ```
 
@@ -61,22 +65,11 @@ dns_service:
 | `ipify` | Uses the [ipify](https://www.ipify.org/) API. |
 | `icanhazip` | Uses the [icanhazip](https://icanhazip.com/) API. |
 | `custom` | Fetches a plain-text URL and uses the response as the IP address. |
-| `custom_json` | Fetches a JSON URL and extracts the address using the `json_field` option. |
+| `custom_json` | Fetches a JSON URL and extracts the address using the `json_field` option (dot notation, e.g. `data.ip`). |
 
 ### DNS services
 
 Only one DNS service should be configured at a time.
-
-**Cloudflare**
-
-```yaml
-dns_service:
-  cloudflare:
-    api_token: your-cloudflare-api-token
-    zone: example.com
-    hostname: home.example.com
-    ttl: 300
-```
 
 **RNDC**
 
@@ -105,26 +98,45 @@ dns_service:
     endpoint: https://members.dyndns.org/nic/update
 ```
 
+**Cloudflare**
+
+Cloudflare is also accepted as a configuration section:
+
+```yaml
+dns_service:
+  cloudflare:
+    api_token: your-cloudflare-api-token
+    zone: example.com
+    hostname: home.example.com
+    ttl: 300
+```
+
+Note that the Cloudflare backend is currently a placeholder — it logs the update it would perform
+but does not call the Cloudflare API, so no record is changed. Use RNDC or DynDNS for a working
+update.
+
 ## Usage
+
+The root command only groups the subcommands, so the work is done by `run`:
 
 ```bash
 # Use the default config.yaml in the current directory
-go run .
+go run . run
 
 # Use a specific config file
-go run . --config /etc/dnsupdater/config.yaml
-go run . -c /etc/dnsupdater/config.yaml
+go run . run --config /etc/dnsupdater/config.yaml
+go run . run -c /etc/dnsupdater/config.yaml
 ```
 
 The `--config` / `-c` flag is registered as a persistent flag on the root command, so it applies to
-every subcommand.
+every subcommand. It defaults to `config.yaml` in the working directory.
 
 ## Layout
 
 | Path | Description |
 | ---- | ----------- |
 | `main.go` | Entry point. |
-| `cmd/` | Cobra command definition and config flag. |
+| `cmd/` | Cobra command definition, the `run` subcommand and the config flag. |
 | `internal/api/` | Configuration types and loading. |
 | `internal/provider/` | Public IP address providers. |
 | `internal/dns/` | DNS update providers and the `DNSUpdater` interface. |
@@ -140,4 +152,4 @@ type DNSUpdater interface {
 
 ## License
 
-See the repository for licensing details.
+No licence file is included in this repository.
