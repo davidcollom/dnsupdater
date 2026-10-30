@@ -15,7 +15,7 @@ works with multiple DNS backends behind a single pluggable interface.
 
 ## Requirements
 
-- Go 1.21 or newer
+- Go 1.25 or newer
 - A DNS provider account (Cloudflare API token, RNDC key, or DynDNS credentials)
 
 ## Installation
@@ -41,7 +41,7 @@ address_providers:
   - type: custom_json
     opts:
       url: https://api.my-ip.io/v2/ip.json
-      json_field: .ip
+      json_field: ip
   - type: custom
     opts:
       url: https://ifconfig.me/ip
@@ -109,12 +109,15 @@ dns_service:
 
 ```bash
 # Use the default config.yaml in the current directory
-dnsupdater
+go run .
 
 # Use a specific config file
-dnsupdater --config /etc/dnsupdater/config.yaml
-dnsupdater -c /etc/dnsupdater/config.yaml
+go run . --config /etc/dnsupdater/config.yaml
+go run . -c /etc/dnsupdater/config.yaml
 ```
+
+The `--config` / `-c` flag is registered as a persistent flag on the root command, so it applies to
+every subcommand.
 
 ## Layout
 
